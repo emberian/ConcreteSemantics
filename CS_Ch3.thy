@@ -382,3 +382,5 @@ lemma "exec0 (comp0 a r) s rs 0 = aval a s"
 apply(induction a arbitrary: r s rs)
 apply(auto simp add: exec0_append comp0_register_preservation)
 done
+
+end
