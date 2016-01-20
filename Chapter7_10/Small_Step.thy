@@ -10,7 +10,8 @@ where
 Assign:  "(x ::= a, s) \<rightarrow> (SKIP, s(x := aval a s))" |
 
 Seq1:    "(SKIP;;c\<^sub>2,s) \<rightarrow> (c\<^sub>2,s)" |
-Seq2:    "(c\<^sub>1,s) \<rightarrow> (c\<^sub>1',s') \<Longrightarrow> (c\<^sub>1;;c\<^sub>2,s) \<rightarrow> (c\<^sub>1';;c\<^sub>2,s')" |
+Seq2:    "(THROW;; c\<^sub>2, s) \<rightarrow> (THROW, s)" |
+Seq3:    "(c\<^sub>1,s) \<rightarrow> (c\<^sub>1',s') \<Longrightarrow> (c\<^sub>1;;c\<^sub>2,s) \<rightarrow> (c\<^sub>1';;c\<^sub>2,s')" |
 
 IfTrue:  "bval b s \<Longrightarrow> (IF b THEN c\<^sub>1 ELSE c\<^sub>2,s) \<rightarrow> (c\<^sub>1,s)" |
 IfFalse: "\<not>bval b s \<Longrightarrow> (IF b THEN c\<^sub>1 ELSE c\<^sub>2,s) \<rightarrow> (c\<^sub>2,s)" |
@@ -19,7 +20,7 @@ While:   "(WHILE b DO c,s) \<rightarrow>
             (IF b THEN c;; WHILE b DO c ELSE SKIP,s)" |
 
 TryOk: "(c, s) \<rightarrow> (c', t) \<Longrightarrow> (TRY c CATCH c2, s) \<rightarrow> (TRY c' CATCH c2, t)" |
-TryBad: "(c, s) \<rightarrow> (THROW, t) \<Longrightarrow> (TRY c CATCH c2, s) \<rightarrow> (c2, t)"
+TryBad: "(TRY THROW CATCH c2, s) \<rightarrow> (c2, s)"
 
 abbreviation
   small_steps :: "com * state \<Rightarrow> com * state \<Rightarrow> bool" (infix "\<rightarrow>*" 55)
@@ -33,7 +34,8 @@ values "{(c',map t [''x'',''y'',''z'']) |c' t.
    (''x'' ::= V ''z'';; ''y'' ::= V ''x'',
     <''x'' := 3, ''y'' := 7, ''z'' := 5>) \<rightarrow>* (c',t)}"
 
-values "{(c', map t [''x'']) |c' t. (TRY ''x'' ::= N 2;; THROW CATCH ''x'' ::= N 3, <>) \<rightarrow>* (c', t)}"
+values "{(c', map t [''x'']) |c' t. (TRY ''x'' ::= N 2;; 
+THROW;; ''x'' ::= N 4 CATCH ''x'' ::= N 3, <>) \<rightarrow>* (c', t)}"
 
 subsection{* Proof infrastructure *}
 
@@ -61,13 +63,37 @@ inductive_cases SeqE[elim]: "(c1;;c2,s) \<rightarrow> ct"
 thm SeqE
 inductive_cases IfE[elim!]: "(IF b THEN c1 ELSE c2,s) \<rightarrow> ct"
 inductive_cases WhileE[elim]: "(WHILE b DO c, s) \<rightarrow> ct"
+inductive_cases TryOkE[elim!]: "(TRY c CATCH c2, s) \<rightarrow> ct"
 
+lemma obvious: "(THROW;; c\<^sub>2, s) \<rightarrow> (THROW, s)" by auto
+
+(* 
+this is a case that occurs in the induction in deterministic.
+
+this particular structure makes it clear that, for the proof to proceed, there 
+must exist some (THROW, s) \<rightarrow> t (and, in particular, t wants to be (THROW, s)).
+however, this makes values non-terminating in the second example above. this also
+wasn't necessary for SKIP. I feel like my semantics are wrong in some way, but I
+can't quite figure out why.
+*)
+
+lemma 
+assumes "(THROW;; c\<^sub>2, s) \<rightarrow> (c', s')"
+shows "c' = THROW"
+using assms
+proof cases
+  case Seq2 then show "c' = THROW" by auto
+next
+  case Seq3 from `(THROW, s) \<rightarrow> (c1_', s')`
+oops
 
 text{* A simple property: *}
 lemma deterministic:
-  "cs \<rightarrow> cs' \<Longrightarrow> cs \<rightarrow> cs'' \<Longrightarrow> cs'' = cs'"
-apply (induction arbitrary: cs'' rule: small_step.induct)
-
+  "(cs, s) \<rightarrow> (cs', s') \<Longrightarrow> (cs, s) \<rightarrow> (cs'', s'') \<Longrightarrow> cs' = cs'' \<and> s' = s''"
+apply (induction arbitrary: cs'' s'' rule: small_step_induct)
+apply(blast)
+apply(blast)
+oops
 
 subsection "Equivalence with big-step semantics"
 
@@ -76,7 +102,7 @@ proof(induction rule: star_induct)
   case refl thus ?case by simp
 next
   case step
-  thus ?case by (metis Seq2 star.step)
+  thus ?case by (metis Seq3 star.step)
 qed
 
 lemma seq_comp:
@@ -88,7 +114,7 @@ text{* The following proof corresponds to one on the board where one would
 show chains of @{text "\<rightarrow>"} and @{text "\<rightarrow>*"} steps. *}
 
 lemma big_to_small:
-  "cs \<Rightarrow> t \<Longrightarrow> cs \<rightarrow>* (SKIP,t)"
+  "cs \<Rightarrow> t \<Longrightarrow> cs \<rightarrow>* t"
 proof (induction rule: big_step.induct)
   fix s show "(SKIP,s) \<rightarrow>* (SKIP,s)" by simp
 next
