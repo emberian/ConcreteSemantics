@@ -5,7 +5,7 @@ theory Small_Step imports "~~/src/HOL/IMP/Star" Big_Step begin
 subsection "The transition relation"
 
 inductive
-  small_step :: "com * state \<Rightarrow> com * state \<Rightarrow> bool" (infix "\<rightarrow>" 55)
+  small_step :: "com \<times> state \<Rightarrow> com \<times> state \<Rightarrow> bool" (infix "\<rightarrow>" 55)
 where
 Assign:  "(x ::= a, s) \<rightarrow> (SKIP, s(x := aval a s))" |
 
@@ -16,7 +16,10 @@ IfTrue:  "bval b s \<Longrightarrow> (IF b THEN c\<^sub>1 ELSE c\<^sub>2,s) \<ri
 IfFalse: "\<not>bval b s \<Longrightarrow> (IF b THEN c\<^sub>1 ELSE c\<^sub>2,s) \<rightarrow> (c\<^sub>2,s)" |
 
 While:   "(WHILE b DO c,s) \<rightarrow>
-            (IF b THEN c;; WHILE b DO c ELSE SKIP,s)"
+            (IF b THEN c;; WHILE b DO c ELSE SKIP,s)" |
+
+TryOk: "(c, s) \<rightarrow> (c', t) \<Longrightarrow> (TRY c CATCH c2, s) \<rightarrow> (TRY c' CATCH c2, t)" |
+TryBad: "(c, s) \<rightarrow> (THROW, t) \<Longrightarrow> (TRY c CATCH c2, s) \<rightarrow> (c2, t)"
 
 abbreviation
   small_steps :: "com * state \<Rightarrow> com * state \<Rightarrow> bool" (infix "\<rightarrow>*" 55)
@@ -30,6 +33,7 @@ values "{(c',map t [''x'',''y'',''z'']) |c' t.
    (''x'' ::= V ''z'';; ''y'' ::= V ''x'',
     <''x'' := 3, ''y'' := 7, ''z'' := 5>) \<rightarrow>* (c',t)}"
 
+values "{(c', map t [''x'']) |c' t. (TRY ''x'' ::= N 2;; THROW CATCH ''x'' ::= N 3, <>) \<rightarrow>* (c', t)}"
 
 subsection{* Proof infrastructure *}
 
@@ -62,9 +66,7 @@ inductive_cases WhileE[elim]: "(WHILE b DO c, s) \<rightarrow> ct"
 text{* A simple property: *}
 lemma deterministic:
   "cs \<rightarrow> cs' \<Longrightarrow> cs \<rightarrow> cs'' \<Longrightarrow> cs'' = cs'"
-apply(induction arbitrary: cs'' rule: small_step.induct)
-apply blast+
-done
+apply (induction arbitrary: cs'' rule: small_step.induct)
 
 
 subsection "Equivalence with big-step semantics"
