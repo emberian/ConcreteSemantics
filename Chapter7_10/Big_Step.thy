@@ -61,6 +61,8 @@ values "{map t [''x'',''y''] |c t.
   (WHILE Less (V ''x'') (V ''y'') DO (''x'' ::= Plus (V ''x'') (N 5)),
    <''x'' := 0, ''y'' := 13>) \<Rightarrow> (c, t)}"
 
+values "{(c', map t [''x'']) |c' t. (TRY ''x'' ::= N 2;; THROW;; ''x'' ::= N 4 CATCH ''x'' ::= N 3, <>) \<Rightarrow> (c', t)}"
+
 text{* Proof automation: *}
 
 text {* The introduction rules are good for automatically

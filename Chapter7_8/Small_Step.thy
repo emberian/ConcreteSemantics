@@ -192,6 +192,7 @@ apply (induction cs "(SKIP,t)" rule: star.induct)
 apply (auto intro: small1_big_continue)
 done
 
+
 text {*
   Finally, the equivalence theorem:
 *}
