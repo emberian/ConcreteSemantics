@@ -1,6 +1,6 @@
 (* Author: Gerwin Klein, Tobias Nipkow *)
 
-theory Big_Step imports Com begin
+theory Big_Step imports "./Com" begin
 
 subsection "Big-Step Semantics of Commands"
 

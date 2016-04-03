@@ -1,6 +1,6 @@
 section "Small-Step Semantics of Commands"
 
-theory Small_Step imports "~~/src/HOL/IMP/Star" Big_Step "/home/cmr/proj/isabelle-hacks/insulin/Insulin" begin
+theory Small_Step imports "~~/src/HOL/IMP/Star" "./Big_Step" begin
 
 subsection "The transition relation"
 

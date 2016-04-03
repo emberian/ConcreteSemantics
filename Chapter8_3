@@ -2,7 +2,7 @@
 
 section "Compiler for IMP"
 
-theory Chapter8_2 imports "Chapter7_8/Big_Step" "~~/src/HOL/IMP/Star"
+theory Chapter8_3 imports "Chapter7_8/Big_Step" "~~/src/HOL/IMP/Star"
 begin
 
 subsection "List setup"

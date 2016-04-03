@@ -45,3 +45,5 @@ lemma "aval (asimp a) s = aval a s"
 apply(induction a)
 apply(auto simp add: aval_plus aval_times)
 done
+
+end

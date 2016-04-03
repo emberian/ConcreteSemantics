@@ -1,6 +1,6 @@
 (* Author: Gerwin Klein, Tobias Nipkow *)
 
-theory Big_Step imports Com begin
+theory Big_Step imports "./Com" begin
 
 subsection "Big-Step Semantics of Commands"
 
@@ -28,7 +28,7 @@ Or2: "(b, s1) \<Rightarrow> s2 \<Longrightarrow> (a OR b, s1) \<Rightarrow> s2"
 text_raw{*}%endsnip*}
 
 text_raw{*\snip{BigStepEx}{1}{2}{% *}
-schematic_lemma ex: "(''x'' ::= N 5;; ''y'' ::= V ''x'', s) \<Rightarrow> ?t"
+schematic_goal ex: "(''x'' ::= N 5;; ''y'' ::= V ''x'', s) \<Rightarrow> ?t"
 apply(rule Seq)
 apply(rule Assign)
 apply simp

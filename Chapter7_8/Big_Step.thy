@@ -1,6 +1,6 @@
 (* Author: Gerwin Klein, Tobias Nipkow *)
 
-theory Big_Step imports Com begin
+theory Big_Step imports "./Com" begin
 
 subsection "Big-Step Semantics of Commands"
 
@@ -27,8 +27,11 @@ RepeatFalse: "\<lbrakk>bval b s\<^sub>2; (c, s\<^sub>1) \<Rightarrow> s\<^sub>2\
 RepeatTrue: "\<lbrakk>\<not>bval b s\<^sub>2; (c, s\<^sub>1) \<Rightarrow> s\<^sub>2; (REPEAT c UNTIL b, s\<^sub>2) \<Rightarrow> s\<^sub>3\<rbrakk> \<Longrightarrow> (REPEAT c UNTIL b, s\<^sub>1) \<Rightarrow> s\<^sub>3"
 text_raw{*}%endsnip*}
 
+fun bind :: "nat option \<Rightarrow> nat" where
+"bind (Some s) = s" |
+"bind None = 0"
 text_raw{*\snip{BigStepEx}{1}{2}{% *}
-schematic_lemma ex: "(''x'' ::= N 5;; ''y'' ::= V ''x'', s) \<Rightarrow> ?t"
+schematic_goal ex: "(''x'' ::= N 5;; ''y'' ::= V ''x'', s) \<Rightarrow> ?t"
 apply(rule Seq)
 apply(rule Assign)
 apply simp

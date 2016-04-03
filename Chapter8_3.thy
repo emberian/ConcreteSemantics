@@ -2,7 +2,7 @@
 
 section "Compiler for IMP"
 
-theory Chapter8_2 imports "Chapter7_8/Big_Step" "~~/src/HOL/IMP/Star"
+theory Chapter8_3 imports "Chapter7_8/Big_Step" "~~/src/HOL/IMP/Star"
 begin
 
 subsection "List setup"
@@ -42,9 +42,11 @@ notation isize ("size")
 
 subsection "Instructions and Stack Machine"
 
+type_synonym state = "nat \<Rightarrow> val"
+
 text_raw{*\snip{instrdef}{0}{1}{% *}
 datatype instr = 
-  LOADI int | LOAD vname | ADD | STORE vname |
+  LOADI int | LOAD nat | ADD | STORE nat |
   JMP int | JMPLESS int | JMPGE int
 text_raw{*}%endsnip*}
 
@@ -88,9 +90,9 @@ lemmas exec_induct = star.induct [of "exec1 P", split_format(complete)]
 code_pred exec1 by (metis exec1_def)
 
 values
-  "{(i,map t [''x'',''y''],stk) | i t stk.
-    [LOAD ''y'', STORE ''x''] \<turnstile>
-    (0, <''x'' := 3, ''y'' := 4>, []) \<rightarrow>* (i,t,stk)}"
+  "{(i,map t [0, 1],stk) | i t stk.
+    [LOAD 1, STORE 0] \<turnstile>
+    (0, <0 := 3, 1 := 4>, []) \<rightarrow>* (i,t,stk)}"
 
 
 subsection{* Verification infrastructure *}
